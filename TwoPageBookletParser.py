@@ -206,13 +206,14 @@ class ParseFilesPanel(wx.Panel):
             return
 
 #        num_orig_pages = im_all.n_frames
-        orig_dpi = im_all.info['dpi']
+#        orig_dpi = im_all.info['dpi']
 #        print("number of pages to parse", num_orig_pages)
 #        num_output_pages = num_orig_pages * 2
         stored_imgs = []
 
         for i, page in enumerate(ImageSequence.Iterator(im_all)):
             pgwidth, pgheight = page.size
+            pgdpi = page.info['dpi']
 
             print("parsing page", i)
             halfheight = pgheight/2
@@ -238,8 +239,9 @@ class ParseFilesPanel(wx.Panel):
 ##                im_bottom.save(file_pth + "_ck_bottom" + file_ext)
 ##                im_top.save(file_pth + "_ck_top" + file_ext)
                 
-            saveFrameToTIFBeingBuilt(im_save, tf, orig_dpi)
-            stored_imgs.append(copy.copy(im_store))
+            print("image", i, ", stored DPI", pgdpi)
+            saveFrameToTIFBeingBuilt(im_save, tf, pgdpi)
+            stored_imgs.append((copy.copy(im_store), copy.copy(pgdpi)))
             even_page = -even_page #toggle even/odd
         # done with the orginal file
         im_all.close()
@@ -247,7 +249,8 @@ class ParseFilesPanel(wx.Panel):
         print("inserting stored half-pages")
         stored_imgs.reverse()
         for im in stored_imgs:
-            saveFrameToTIFBeingBuilt(im, tf, orig_dpi)
+            print("image, stored DPI", im[1])
+            saveFrameToTIFBeingBuilt(im[0], tf, im[1])
         tf.close()
         
         print("done")
